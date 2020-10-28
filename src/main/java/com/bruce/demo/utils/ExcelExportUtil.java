@@ -1,16 +1,20 @@
 package com.bruce.demo.utils;
 
 import com.bruce.demo.bean.Products;
+import com.google.common.base.Throwables;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author bolin
@@ -27,21 +31,24 @@ public class ExcelExportUtil {
      * @param dataList
      * @param response
      */
-    public static void excelExport( String fileName, String[] headers, List<Object[]> dataList,
+    public static void excelExport(String fileName, String[] headers, List<Object[]> dataList,
                                    HttpServletResponse response) {
         Workbook workbook = getWorkbook(headers, dataList);
         if (workbook != null) {
             ByteArrayOutputStream byteArrayOutputStream = null;
             try {
+//                response.setContentType ("application/octet-stream; charset=utf-8");
+//                response.setCharacterEncoding ("utf-8");
+//
+
                 byteArrayOutputStream = new ByteArrayOutputStream();
                 workbook.write(byteArrayOutputStream);
                 String suffix = ".xls";
-
                 response.setContentType("application/vnd.ms-excel;charset=utf-8");
                 response.setHeader("Content-Disposition",
-                        "attachment;filename=" + new String((fileName + suffix).getBytes(), StandardCharsets.ISO_8859_1));
+                        "attachment;filename=" + new String((fileName + suffix).getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8));
 
-                OutputStream outputStream = response.getOutputStream();
+                ServletOutputStream outputStream = response.getOutputStream();
                 outputStream.write(byteArrayOutputStream.toByteArray());
                 outputStream.close();
             } catch (Exception e) {
@@ -66,22 +73,38 @@ public class ExcelExportUtil {
             }
         }
 
+
     }
 
-    public static File inputStreamToFile(InputStream ins, File file) {
-        try {
-            OutputStream os = new FileOutputStream(file);
-            int bytesRead = 0;
-            byte[] buffer = new byte[8192];
-            while ((bytesRead = ins.read(buffer, 0, 8192)) != -1) {
-                os.write(buffer, 0, bytesRead);
+
+    public static void download(String fileName, HttpServletResponse response) throws UnsupportedEncodingException {
+
+        response.setContentType("application/octet-stream");
+        response.setHeader("Content-Disposition", "filename=" + URLEncoder.encode(fileName+".xlsx", "utf-8"));
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+
+        try (ServletOutputStream os = response.getOutputStream()) {
+            try (InputStream is = Objects.requireNonNull(Thread.currentThread().getContextClassLoader()
+                    .getResource(fileName))
+                    .openStream()) {
+
+                boolean running = true;
+                byte[] stack = new byte[8192];
+
+                while (running) {
+                    int length = is.read(stack);
+                    if (length > -1) {
+                        os.write(stack, 0, length);
+                    } else {
+                        running = false;
+                    }
+                }
             }
-            os.close();
-            ins.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("fail to export template, cause: {}", Throwables.getStackTraceAsString(e));
         }
-        return file;
+
+
     }
 
     /**

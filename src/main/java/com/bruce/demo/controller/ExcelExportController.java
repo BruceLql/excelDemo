@@ -5,18 +5,24 @@ import com.bruce.demo.utils.ExcelExportUtil;
 import com.bruce.demo.utils.JsonSupport;
 import com.fasterxml.jackson.core.type.TypeReference;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.multipart.MultipartHttpServletRequest;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author: lql
@@ -34,27 +40,26 @@ public class ExcelExportController implements JsonSupport {
     };
 
     @PostMapping("/export")
-    public File excelExport(MultipartFile multipartFile, HttpServletResponse response) {
-        if(!multipartFile.isEmpty()){
-            File file = new File(path+"/"+System.nanoTime() + "-数据");
+    public void excelExport(MultipartFile multipartFile, HttpServletResponse response) {
+        if (!multipartFile.isEmpty()) {
+
+            String fileName = System.nanoTime() + "-data";
+
             try {
                 InputStream inputStream = multipartFile.getInputStream();
 
                 InputStreamReader isreader = new InputStreamReader(inputStream);
                 BufferedReader br = new BufferedReader(isreader);
-                List<Products> detailInfoList = covert(br.readLine(),new HashMap<>());
+                List<Products> detailInfoList = covert(br.readLine(), new HashMap<>());
                 List<Object[]> dataList = ExcelExportUtil.convert2InfoData(detailInfoList);
                 String[] header = ExcelExportUtil.getShopFileHeader();
-                ExcelExportUtil.excelExport( file.getName(), header, dataList, response);
-            }catch (Exception e){
+                ExcelExportUtil.excelExport(fileName, header, dataList, response);
+            } catch (Exception e) {
                 e.printStackTrace();
                 log.error(e.getMessage());
             }
-            return file;
         }
-        return null;
     }
-
 
 
     private List<Products> covert(String fileString, Map<String, Object> map) {
@@ -67,33 +72,6 @@ public class ExcelExportController implements JsonSupport {
 
         }
         return Collections.emptyList();
-    }
-
-    @PostMapping("/fileUpload")
-    @ResponseBody
-    public void upload(MultipartFile multipartFile,HttpServletResponse response){
-
-        if(!multipartFile.isEmpty()){
-            System.out.println(multipartFile.getOriginalFilename());
-            try {
-                InputStream inputStream = multipartFile.getInputStream();
-
-                InputStreamReader isreader = new InputStreamReader(inputStream);
-                BufferedReader br = new BufferedReader(isreader);
-                String value = br.readLine();
-                log.info("====================:"+value);
-                Map<String, Object> map = new HashMap<>();
-
-                List<Products> covert = covert(value, map);
-                List<Object[]> dataList = ExcelExportUtil.convert2InfoData(covert);
-                String[] header = ExcelExportUtil.getShopFileHeader();
-                ExcelExportUtil.excelExport(System.nanoTime() + "-数据", header, dataList, response);
-
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
     }
 
 }
