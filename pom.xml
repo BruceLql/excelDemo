@@ -90,6 +90,30 @@
 			<version>5.2.9.RELEASE</version>
 		</dependency>
 
+		<!-- 当当的elastic-job-lite相关 -->
+		<dependency>
+			<artifactId>elastic-job-common-core</artifactId>
+			<groupId>com.dangdang</groupId>
+			<version>2.1.5</version>
+		</dependency>
+		<dependency>
+			<artifactId>elastic-job-lite-core</artifactId>
+			<groupId>com.dangdang</groupId>
+			<version>2.1.5</version>
+		</dependency>
+		<dependency>
+			<artifactId>elastic-job-lite-spring</artifactId>
+			<groupId>com.dangdang</groupId>
+			<version>2.1.5</version>
+		</dependency>
+		<!-- lombok -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.16.18</version>
+			<scope>provided</scope>
+		</dependency>
+
 	</dependencies>
 
 	<build>

@@ -1,0 +1,46 @@
+# 端口
+server:
+  port: 8080
+
+# spring配置相关
+spring:
+  # 应用名称
+  application:
+    name: elastic-job-demo
+
+# zk注册中心配置相关
+reg-center:
+  # 连接Zookeeper服务器的列表IP:端口号,多个地址用逗号分隔
+  server-list: "localhost:2181"
+  # Zookeeper的命名空间
+  namespace: zk-elastic-job
+  # 等待重试的间隔时间的初始值 默认1000，单位：毫秒
+  baseSleepTimeMilliseconds: 1000
+  # 等待重试的间隔时间的最大值 默认3000，单位：毫秒
+  maxSleepTimeMilliseconds: 3000
+  # 最大重试次数 默认3
+  maxRetries: 3
+  # 会话超时时间 默认60000，单位：毫秒
+  sessionTimeoutMilliseconds: 60000
+  # 连接超时时间 默认15000，单位：毫秒
+  connectionTimeoutMilliseconds: 15000
+  # 连接Zookeeper的权限令牌 默认不需要
+  #digest:
+
+
+# simpleJobDemo作业配置相关
+simpleJobDemo:
+  # cron表达式，用于控制作业触发时间
+  cron: 0/30 * * * * ?
+  # 作业分片总数
+  sharding-total-count: 3
+  # 分片序列号和参数用等号分隔，多个键值对用逗号分隔.分片序列号从0开始，不可大于或等于作业分片总数
+  sharding-item-parameters: 0=上海,1=北京,2=深圳
+  # 作业自定义参数,可通过传递该参数为作业调度的业务方法传参，用于实现带参数的作业
+  job-parameter: "simpleJobDemo作业参数"
+  # 是否开启任务执行失效转移，开启表示如果作业在一次任务执行中途宕机，允许将该次未完成的任务在另一作业节点上补偿执行, 默认为false
+  failover: true
+  # 是否开启错过任务重新执行 默认为true
+  misfire: true
+  # 作业描述信息
+  job-description: "simpleJobDemo作业描述"
